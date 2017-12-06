@@ -1,40 +1,32 @@
-echo "Building docker image"
+# Description:
+# This script builds a docker image using the Dockerfile from the current directory and a war-file from the target/ directory.
+# The name of the image is derived from the war-file's pom.properties file, whereas the image version can be explicitly defined.
+# After the image is built, it is pushed to a docker registry and subsequently removed from the local image list.
+#
+# Arguments:
+#
+# 1 - docker image version
+#     If empty, the version will be "latest".
+#     If "<maven>", the version will be the one defined in the pom.properties of the war-file.
+#
+# 2 - docker registry URL
+#     If "<gerdi>", the URL will be "docker-registry.gerdi.research.lrz.de:5043".
 
-# go to the maven build directory
-cd target
+image=$(./scripts/docker-getImageName.sh "$1" "$2")
 
-# set up variables
-dockerRegistryUrl="docker-registry.gerdi.research.lrz.de:5043"
-dockerFilePath="Dockerfile"
-warSourceFile=$(ls *.war)
+if [ "$image" = "" ]; then 
+  echo "Could not find a war-file in the target/ directory! Make sure you are in a valid Maven project root directory, and that a war-file has been built!"
 
-imageVersion=${warSourceFile#*_}
-imageVersion=$(echo ${imageVersion%.*} | tr '[:upper:]' '[:lower:]')
-imageName=$(echo ${warSourceFile%_*} | tr '[:upper:]' '[:lower:]')
-image=$dockerRegistryUrl/$imageName:$imageVersion
+else
+  # build image
+  echo "Building docker image $image"
+  docker build -t $image .
 
-warTargetFile="\$JETTY_BASE/webapps/${imageName%-harvesterservice*}.war"
+  # push image
+  echo "Pushing docker image $image"
+  docker push $image
 
-# remove old docker file
-rm -f $dockerFilePath
-
-# assemble docker file
-echo "# GeRDI Harvester Image:" >> $dockerFilePath
-echo "# $imageName:$imageVersion" >> $dockerFilePath
-echo >> $dockerFilePath
-echo >> $dockerFilePath
-echo "FROM jetty:9.4.7-alpine" >> $dockerFilePath
-echo >> $dockerFilePath
-echo "COPY $warSourceFile $warTargetFile" >> $dockerFilePath
-echo >> $dockerFilePath
-echo "EXPOSE 8080" >> $dockerFilePath
-
-# build image
-docker build -t $image .
-
-# push image
-echo "Pushing docker image to $dockerRegistryUrl"
-docker push $image
-
-# remove image from local image list
-docker rmi $image
+  # remove image from local image list
+  echo "Removing docker image from local docker image list"
+  docker rmi $image
+fi

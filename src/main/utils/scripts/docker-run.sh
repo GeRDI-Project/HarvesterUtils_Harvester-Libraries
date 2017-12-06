@@ -1,5 +1,5 @@
 # Description:
-# This script builds a docker image using the Dockerfile from the current directory and a war-file from the target/ directory.
+# This script builds and runs a docker image using the Dockerfile from the current directory and a war-file from the target/ directory.
 # The name of the image is derived from the war-file's pom.properties file, whereas the image version can be explicitly defined.
 #
 # Arguments:
@@ -18,4 +18,7 @@ else
   # build image
   echo "Building docker image $image"
   docker build -t $image .
+  
+  # run image
+  docker run -p 8080:8080 $image
 fi
