@@ -1,40 +1,54 @@
-echo "Building docker image"
+# Description:
+# This script builds a docker image using the Dockerfile from the current directory and a war-file from the target/ directory.
+# The name of the image is derived from the war-file's pom.properties file, whereas the image version can be explicitly defined.
+# After the image is built, it is pushed to a docker registry and subsequently removed from the local image list.
+#
+# Arguments:
+#
+# 1 - docker image name
+#     If empty, the name will be the war file name up until the first character that is neither a letter nor a -
+#     If "<maven>", the name will be the artifactId defined in the pom.properties of the war-file.
+#     If "<git>", the name will the name of the bitbucket repository.
+#
+# 2 - docker image tag
+#     If empty, the tag will be "latest".
+#     If "<maven>", the tag will be the one defined in the pom.properties of the war-file.
+#     If "<git>", the tag will be the current git tag.
+#
+# 3 - docker registry URL
+#     If "<gerdi>", the URL will be "docker-registry.gerdi.research.lrz.de:5043".
 
-# go to the maven build directory
-cd target
+if [ "$3" = "" ]; then
+  echo "You need to specify three arguments: dockerImageName, dockerImageTag, dockerRegistryURL"
+  exit 1
+fi
 
-# set up variables
-dockerRegistryUrl="docker-registry.gerdi.research.lrz.de:5043"
-dockerFilePath="Dockerfile"
-warSourceFile=$(ls *.war)
+# navigate to project root directory
+projectRoot=$(git rev-parse --show-toplevel)
+if [ "$projectRoot" != "" ]; then
+  cd $projectRoot
+fi
 
-imageVersion=${warSourceFile#*_}
-imageVersion=$(echo ${imageVersion%.*} | tr '[:upper:]' '[:lower:]')
-imageName=$(echo ${warSourceFile%_*} | tr '[:upper:]' '[:lower:]')
-image=$dockerRegistryUrl/$imageName:$imageVersion
+image=$(./scripts/docker-getImageName.sh "$1" "$2" "$3")
 
-warTargetFile="\$JETTY_BASE/webapps/${imageName%-harvesterservice*}.war"
+if [ "$image" != "" ]; then 
+  # build image
+  echo "Building docker image $image"
+  docker build -t $image .
 
-# remove old docker file
-rm -f $dockerFilePath
+  # push image
+  echo "Pushing docker image $image"
+  docker push $image
+  
+  # push 'latest' tag
+  imageTag=${image##*:}
+  if [ "$imageTag" != "latest" ]; then
+    latestImage=${image%:*}:latest
+    docker tag  $image $latestImage
+    docker push $latestImage
+  fi
 
-# assemble docker file
-echo "# GeRDI Harvester Image:" >> $dockerFilePath
-echo "# $imageName:$imageVersion" >> $dockerFilePath
-echo >> $dockerFilePath
-echo >> $dockerFilePath
-echo "FROM jetty:9.4.7-alpine" >> $dockerFilePath
-echo >> $dockerFilePath
-echo "COPY $warSourceFile $warTargetFile" >> $dockerFilePath
-echo >> $dockerFilePath
-echo "EXPOSE 8080" >> $dockerFilePath
-
-# build image
-docker build -t $image .
-
-# push image
-echo "Pushing docker image to $dockerRegistryUrl"
-docker push $image
-
-# remove image from local image list
-docker rmi $image
+  # remove image from local image list
+  echo "Removing docker image from local docker image list"
+  docker rmi $image
+fi
