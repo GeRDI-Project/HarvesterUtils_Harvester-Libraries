@@ -123,7 +123,8 @@ chmod o+rw $warFile
 
 # build image
 echo "Building docker image $fullImageName" >&2
-docker build -t $fullImageName .
+dockerBuildLog=$(docker build -t $fullImageName .)
+echo "$dockerBuildLog" >&2
 
 # restore old war file access rights
 chmod $warAccessRights $warFile
