@@ -4,7 +4,6 @@
 # After the image is built, it is pushed to a docker registry and subsequently removed from the local image list.
 #
 # Arguments:
-#
 # 1 - docker image name
 #     If empty, the name will be the war file name up until the first character that is neither a letter nor a -
 #     If "<maven>", the name will be the artifactId defined in the pom.properties of the war-file.
@@ -18,6 +17,7 @@
 # 3 - docker registry URL
 #     If "<gerdi>", the URL will be "docker-registry.gerdi.research.lrz.de:5043".
 
+
 if [ "$3" = "" ]; then
   echo "You need to specify three arguments: dockerImageName, dockerImageTag, dockerRegistryURL"
   exit 1
@@ -29,26 +29,23 @@ if [ "$projectRoot" != "" ]; then
   cd $projectRoot
 fi
 
-image=$(./scripts/docker-getImageName.sh "$1" "$2" "$3")
+# build image
+fullImageName=$(./scripts/docker-build.sh "$1" "$2" "$3")
 
-if [ "$image" != "" ]; then 
-  # build image
-  echo "Building docker image $image"
-  docker build -t $image .
-
+if [ "$fullImageName" != "" ]; then 
   # push image
-  echo "Pushing docker image $image"
-  docker push $image
+  echo "Pushing docker image $fullImageName" >&2
+  docker push $fullImageName
   
   # push 'latest' tag
-  imageTag=${image##*:}
+  imageTag=${fullImageName##*:}
   if [ "$imageTag" != "latest" ]; then
-    latestImage=${image%:*}:latest
-    docker tag  $image $latestImage
+    latestImage=${fullImageName%:*}:latest
+    docker tag  $fullImageName $latestImage
     docker push $latestImage
   fi
 
   # remove image from local image list
-  echo "Removing docker image from local docker image list"
-  docker rmi $image
+  echo "Removing docker image from local docker image list" >&2
+  docker rmi $fullImageName
 fi
