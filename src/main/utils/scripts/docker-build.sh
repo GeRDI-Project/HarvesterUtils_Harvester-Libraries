@@ -112,6 +112,13 @@ if [ "$imageName" = "" ]; then
   imageName=${imageName%%[^-A-Za-z]*}
 fi
 
+# remove "-Harvester...", or "Harvester..." suffix from image name
+imageName=${imageName%-Harvester*}
+imageName=${imageName%Harvester*}
+
+# prepend "harvest/"
+imageName="harvest/$imageName"
+
 # convert image name and tag to lower case
 imageName=$(echo $imageName | tr '[:upper:]' '[:lower:]')
 imageTag=$(echo $imageTag | tr '[:upper:]' '[:lower:]')
