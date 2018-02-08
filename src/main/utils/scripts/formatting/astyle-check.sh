@@ -72,7 +72,7 @@ Unformatted Files:
 errorCount=$(CountAndPrintUnformattedFiles)
 if [ $errorCount -ne 0 ]; then
   echo '
-Found '"$errorCount"' unformatted files! Please use the ArtisticStyle formatter before committing your code!
+Found '"$errorCount"' unformatted file(s)! Please use the ArtisticStyle formatter before committing your code!
 (see https://wiki.gerdi-project.de/display/GeRDI/%5BWIP%5D+How+to+Format+Code)'
   exit 1
 else
