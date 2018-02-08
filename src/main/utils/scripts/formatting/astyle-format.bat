@@ -22,7 +22,7 @@
 @ECHO OFF
 SETLOCAL ENABLEEXTENSIONS
 
-WHERE astyle
+WHERE /Q astyle
 IF %ERRORLEVEL% NEQ 0 (
   echo Cannot format: AStyle 3.11 is not installed!
   ENDLOCAL
