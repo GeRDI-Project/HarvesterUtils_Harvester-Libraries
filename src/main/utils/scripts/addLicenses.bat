@@ -40,7 +40,7 @@ for /f "tokens=1,2,3 delims=><" %%a in ('type !pomPath!^|find "<inceptionYear>"'
 )
 
 IF "%inceptionYear%" == "" (
-  echo No ^<inceptionYear^> tag was found, using the last modified date from the pom.xml
+  echo No ^<inceptionYear^> tag was found, using the date of the first commit of the pom.xml
   
   :: get file creation date
   CALL :getFileCreationDate "!pomPath!" "inceptionYear"
@@ -145,9 +145,7 @@ EXIT /B 0
 :getFileCreationDate
 SET fileName=%~1
 SET varName=%~2
-for /f "skip=5 tokens=1,2,3 delims=. " %%a in ('dir /a-d /tc "%fileName%"') do (
-    CALL SET "%%varName%%=%%c"
-    GOTO :loopend
+for /f "tokens=1-6 delims= " %%a in ('git log --format^=%%aD -- "%fileName%"') do (
+    CALL SET "%%varName%%=%%d"
   )
-  :loopend
 EXIT /B 0

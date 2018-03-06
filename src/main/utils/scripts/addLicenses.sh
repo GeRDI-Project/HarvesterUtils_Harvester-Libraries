@@ -41,9 +41,9 @@ pomContent=$(cat pom.xml)
 inceptionYear=$(echo "$pomContent" | grep -oP "(?<=<inceptionYear>)[^<]+")
 
 if [ "$inceptionYear" = "" ]; then
-  echo "No <inceptionYear> tag was found, using the last modified date from the pom.xml" >&2
-  lastModifiedTimeStamp=$(stat -c %Y pom.xml | sed 's/pom.xml//')
-  inceptionYear=$(date -d "@$lastModifiedTimeStamp" -u +%Y)
+  echo "No <inceptionYear> tag was found, using the date of the first commit of the pom.xml" >&2
+  commitDates=$(git log --format=%aD -- "pom.xml" | sed -e "s~.* \(....\) +.*~\\1~")
+  inceptionYear=${commitDates:${#commitDates} - 4}
   
   echo "Adding <inceptionYear> tag to pom.xml" >&2
   
