@@ -24,14 +24,11 @@ SETLOCAL ENABLEDELAYEDEXPANSION
 :: check if astyle exists
 WHERE /Q astyle
 IF %ERRORLEVEL% NEQ 0 (
-  echo Cannot format: AStyle 3.11 is not installed!
+  echo Cannot format: AStyle 3.11 is not installed^^!
   ENDLOCAL
   ECHO ON
   EXIT /B 1
 )
-
-:: define newline convenience variable
-set newline=^&echo.
 
 echo Checking Code Formatting:
 

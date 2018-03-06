@@ -68,7 +68,7 @@ fi
 # retrieve owner tag value
 owner=$(echo "$pomContent" | grep -oP "(?<=<owner>)[^<]+")
 
-# retrieve developers if now owner was specified
+# retrieve developers if no owner was specified
 if [ "$owner" = "" ]; then
   developers=${pomContent#*<developers>}
   developers=${developers%%</developers>*}
