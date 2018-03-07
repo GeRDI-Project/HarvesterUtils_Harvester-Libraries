@@ -85,11 +85,12 @@ if [ "$inceptionYear" = "" ]; then
   whitespace=$(echo "$pomContent" | grep -oP "\s+(?=<$insertionTag>)")
   
   # write content to temporary pom.xml
-  echo "${pomContent%</$insertionTag>*}</$insertionTag>" > tempPom.xml
-  echo "$whitespace<inceptionYear>$inceptionYear</inceptionYear>${pomContent#*</$insertionTag>}" >> tempPom.xml
+  newPom=$(mktemp)
+  echo "${pomContent%</$insertionTag>*}</$insertionTag>" > $newPom
+  echo "$whitespace<inceptionYear>$inceptionYear</inceptionYear>${pomContent#*</$insertionTag>}" >> $newPom
   
   # replace pom.xml
-  mv -f tempPom.xml pom.xml
+  mv -f $newPom pom.xml
 fi
 
 # generate headers
