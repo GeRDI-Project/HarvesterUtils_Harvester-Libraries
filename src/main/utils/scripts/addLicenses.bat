@@ -34,6 +34,50 @@ IF NOT EXIST "%pomPath%" (
   EXIT /B 1
 )
 
+:: retrieve owner tag value
+for /f "tokens=1,2,3 delims=><" %%a in ('type !pomPath!^|find "<owner>"') do (
+  SET owner=%%c
+)
+
+:: retrieve developer names if no owner was specified
+IF "%owner%" == "" (
+  :: retrieve line number of <developer> tag
+  for /f "tokens=1,2,3 delims=[]" %%a in ('type !pomPath!^|find /N "<developers>"') do (
+    SET /a developersOpeningLine=%%a
+  )
+  
+  IF NOT "!developersOpeningLine!" == "" (
+    :: retrieve line number of </developer> tag
+    for /f "tokens=1,2,3 delims=[]" %%a in ('type !pomPath!^|find /N "</developers>"') do (
+      SET /a developersClosingLine=%%a
+    )
+
+	:: concatenate developer names
+    for /f "tokens=1,2,3,4 delims=[]<>" %%a in ('type !pomPath!^|find /N "<name>"') do (
+      SET /a lineNumber=%%a
+	  SET devName=%%d
+	
+	  IF !lineNumber! GTR !developersOpeningLine! (
+	    IF !lineNumber! LSS !developersClosingLine! (
+          IF "!owner!" == "" (
+            SET owner=!devName!
+          ) ELSE (
+            SET owner=!owner!, !devName!
+          )
+        )
+      )
+    )
+  )
+)
+
+:: abort if no owner was found
+IF "%owner%" == "" (
+  echo Cannot set license headers, because no owners are specified^^!
+  ENDLOCAL
+  ECHO ON
+  EXIT /B 1
+)
+
 :: retrieve inception year
 for /f "tokens=1,2,3 delims=><" %%a in ('type !pomPath!^|find "<inceptionYear>"') do (
   SET inceptionYear=%%c
@@ -86,53 +130,8 @@ IF "%inceptionYear%" == "" (
   del tempPom.xml
 )
 
-:: retrieve owner tag value
-for /f "tokens=1,2,3 delims=><" %%a in ('type !pomPath!^|find "<owner>"') do (
-  SET owner=%%c
-)
-
-:: retrieve developer names if no owner was specified
-IF "%owner%" == "" (
-  :: retrieve line number of <developer> tag
-  for /f "tokens=1,2,3 delims=[]" %%a in ('type !pomPath!^|find /N "<developers>"') do (
-    SET /a developersOpeningLine=%%a
-  )
-  
-  IF NOT "!developersOpeningLine!" == "" (
-    :: retrieve line number of </developer> tag
-    for /f "tokens=1,2,3 delims=[]" %%a in ('type !pomPath!^|find /N "</developers>"') do (
-      SET /a developersClosingLine=%%a
-    )
-
-	:: concatenate developer names
-    for /f "tokens=1,2,3,4 delims=[]<>" %%a in ('type !pomPath!^|find /N "<name>"') do (
-      SET /a lineNumber=%%a
-	  SET devName=%%d
-	
-	  IF !lineNumber! GTR !developersOpeningLine! (
-	    IF !lineNumber! LSS !developersClosingLine! (
-          IF "!owner!" == "" (
-            SET owner=!devName!
-          ) ELSE (
-            SET owner=!owner!, !devName!
-          )
-        )
-      )
-    )
-  )
-)
-
-:: abort if no owner was found
-IF "%owner%" == "" (
-  echo Cannot set license headers, because no owners are specified^^!
-  ENDLOCAL
-  ECHO ON
-  EXIT /B 1
-)
-
-echo Adding %inceptionYear% Headers for owner(s): %owner%
-
 :: generate headers
+echo Adding %inceptionYear% Headers for owner(s): %owner%
 mvn generate-resources -DaddHeaders "-Downer=%owner%"
 
 :: exit script

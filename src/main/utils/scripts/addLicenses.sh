@@ -37,6 +37,33 @@ inceptionYear=""
 # read pom.xml
 pomContent=$(cat pom.xml)
 
+# retrieve owner tag value
+owner=$(echo "$pomContent" | grep -oP "(?<=<owner>)[^<]+")
+
+# retrieve developers if no owner was specified
+if [ "$owner" = "" ]; then
+  developers=${pomContent#*<developers>}
+  developers=${developers%%</developers>*}
+  developers=$(echo "$developers" | grep -oP "(?<=<name>)[^<]+")
+  
+  owner=$(printf '%s\n' "$developers" | (while IFS= read -r devName
+  do
+    if [ "$owner" = "" ]; then
+	  owner="$devName"
+	else
+	  owner="$owner, $devName"
+	fi
+  done
+  
+  echo "$owner" ))
+fi
+
+# abort if no owner was found
+if [ "$owner" = "" ]; then
+  echo "Cannot set license headers, because no owners are specified!" >&2
+  exit 1
+fi
+
 # retrieve inception year
 inceptionYear=$(echo "$pomContent" | grep -oP "(?<=<inceptionYear>)[^<]+")
 
@@ -65,34 +92,6 @@ if [ "$inceptionYear" = "" ]; then
   mv -f tempPom.xml pom.xml
 fi
 
-# retrieve owner tag value
-owner=$(echo "$pomContent" | grep -oP "(?<=<owner>)[^<]+")
-
-# retrieve developers if no owner was specified
-if [ "$owner" = "" ]; then
-  developers=${pomContent#*<developers>}
-  developers=${developers%%</developers>*}
-  developers=$(echo "$developers" | grep -oP "(?<=<name>)[^<]+")
-  
-  owner=$(printf '%s\n' "$developers" | (while IFS= read -r devName
-  do
-    if [ "$owner" = "" ]; then
-	  owner="$devName"
-	else
-	  owner="$owner, $devName"
-	fi
-  done
-  
-  echo "$owner" ))
-fi
-
-# abort if no owner was found
-if [ "$owner" = "" ]; then
-  echo "Cannot set license headers, because no owners are specified!" >&2
-  exit 1
-fi
-
-echo "Adding $inceptionYear Headers for owner(s): $owner" >&2
-
 # generate headers
+echo "Adding $inceptionYear Headers for owner(s): $owner" >&2
 mvn generate-resources -DaddHeaders -Downer="$owner"
