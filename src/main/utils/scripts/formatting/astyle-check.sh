@@ -1,6 +1,6 @@
 #!/bin/bash
-
-# Copyright © 2018 Robin Weiss (http://www.gerdi-project.de/)
+#
+# Copyright © 2017 Robin Weiss (http://www.gerdi-project.de)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
 # This Script checks all source files that match the extensions defined in astyle-fileTypes.ini
 # and prints a list of possibly unformatted files.
