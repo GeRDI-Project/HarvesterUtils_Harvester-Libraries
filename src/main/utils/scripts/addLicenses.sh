@@ -95,4 +95,4 @@ fi
 
 # generate headers
 echo "Adding $inceptionYear Headers for $owner" >&2
-echo $(mvn generate-resources -DaddHeaders -Downer="$owner") >&2
+echo -e "$(mvn generate-resources -DaddHeaders -Downer="$owner")" >&2
