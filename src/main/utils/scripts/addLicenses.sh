@@ -94,5 +94,5 @@ if [ "$inceptionYear" = "" ]; then
 fi
 
 # generate headers
-echo "Adding $inceptionYear Headers for owner(s): $owner" >&2
-mvn generate-resources -DaddHeaders -Downer="$owner"
+echo "Adding $inceptionYear Headers for $owner" >&2
+echo $(mvn generate-resources -DaddHeaders -Downer="$owner") >&2
