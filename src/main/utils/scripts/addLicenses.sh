@@ -69,8 +69,8 @@ inceptionYear=$(echo "$pomContent" | grep -oP "(?<=<inceptionYear>)[^<]+")
 
 if [ "$inceptionYear" = "" ]; then
   echo "No <inceptionYear> tag was found, using the date of the first commit of the pom.xml" >&2
-  commitDates=$(git log --format=%aD -- "pom.xml" | sed -e "s~.* \(....\) +.*~\\1~")
-  inceptionYear=${commitDates:${#commitDates} - 4}
+  commitDates=$(git log --format=%aD -- "pom.xml")
+  inceptionYear=$(echo "${commitDates##*$'\n'}" | grep -oP "(?<=\s)\d\d\d\d")
   
   echo "Adding <inceptionYear> tag to pom.xml" >&2
   
@@ -94,5 +94,5 @@ if [ "$inceptionYear" = "" ]; then
 fi
 
 # generate headers
-echo "Adding $inceptionYear Headers for owner(s): $owner" >&2
-mvn generate-resources -DaddHeaders -Downer="$owner"
+echo "Adding license headers for owner(s) '$owner' and year '$inceptionYear'" >&2
+echo -e "$(mvn generate-resources -DaddHeaders -Downer="$owner")" >&2

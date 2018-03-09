@@ -133,7 +133,7 @@ IF "%inceptionYear%" == "" (
 )
 
 :: generate headers
-echo Adding %inceptionYear% Headers for owner(s): %owner%
+echo Adding license headers for owner(s) ^'%owner%^' and year ^'%inceptionYear%^'
 mvn generate-resources -DaddHeaders "-Downer=%owner%"
 
 :: exit script
