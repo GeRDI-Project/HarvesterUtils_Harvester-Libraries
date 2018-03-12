@@ -29,7 +29,9 @@ echo "Formatting Code:"
 
 # navigate to project root directory
 projectRoot=$(git rev-parse --show-toplevel)
-if [ "$projectRoot" != "" ]; then
+if [ "$projectRoot" = "" ]; then
+  projectRoot="."
+else
   cd $projectRoot
 fi
 

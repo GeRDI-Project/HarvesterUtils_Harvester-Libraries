@@ -31,7 +31,9 @@ echo Formatting Code:
 
 :: navigate to project root directory
 for /f %%i in ('git rev-parse --show-toplevel') do SET projectRoot=%%i
-IF NOT "%projectRoot%" == "" (
+IF "%projectRoot%" == "" (
+  SET projectRoot=%CD%
+) ELSE (
   cd %projectRoot%
 )
 
@@ -45,4 +47,3 @@ for /F "tokens=*" %%i in (%includedFiles%) do (
 
 ENDLOCAL
 ECHO ON
-EXIT /B 0
