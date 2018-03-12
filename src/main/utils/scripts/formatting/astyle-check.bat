@@ -35,7 +35,9 @@ echo Checking Code Formatting:
 
 :: navigate to project root directory
 for /f %%i in ('git rev-parse --show-toplevel') do SET projectRoot=%%i
-IF NOT "%projectRoot%" == "" (
+IF "%projectRoot%" == "" (
+  SET projectRoot=%CD%
+) ELSE (
   cd %projectRoot%
 )
 
