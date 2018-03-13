@@ -17,6 +17,15 @@
 
 # This Script formats all source files that match the extensions defined in astyle-fileTypes.ini
 
+# Description:
+# This Script formats all source files that match the extensions defined in astyle-fileTypes.ini
+# using the astyle-kr.ini to determine how the files should be formatted.
+# Can format single files or a directory.
+#
+# Arguments: 
+#  1 - the file or directory that is to be formatted. If empty, the src/ folder will be chosen.
+
+
 # abort if AStyle is not installed
 isInstalled=$(command -v astyle)
 
@@ -35,12 +44,38 @@ else
   cd $projectRoot
 fi
 
+# get path to the files that are to be formatted
+targetPath="$1"
+if [ "$targetPath" = "" ]; then
+  targetPath="$projectRoot/src/*"
+else
+  if [ -d "$targetPath" ]; then
+    targetPath="$(realpath "$targetPath")/*"
+  elif [ -f "$targetPath" ]; then
+    targetPath="$(realpath "$targetPath")"
+  else
+    echo "Could not format path $targetPath! Please either specify a file or a folder." >&2
+    exit 1
+  fi
+fi
+
 # read ini files
 formattingStyle="$projectRoot/scripts/formatting/astyle-kr.ini"
 includedFiles=$(cat "$projectRoot/scripts/formatting/astyle-includedFiles.ini")
 
-# run AStyle for all included filetypes
-printf '%s\n' "$includedFiles" | while IFS= read -r fileType
-do 
-  astyle "$projectRoot/src/*.$fileType" --options="$formattingStyle" --recursive --suffix=none --formatted
-done
+if [ "${targetPath: -1}" = "*" ]; then
+  # format folder
+  printf '%s\n' "$includedFiles" | while IFS= read -r fileType
+  do 
+    astyle "$targetPath.$fileType" --options="$formattingStyle" --recursive --suffix=none --formatted
+  done
+else
+  # format single file
+  validFileExtension=$(echo "$includedFiles" | grep "${targetPath##*.}")
+  if [ "$validFileExtension" != "" ]; then
+    astyle "$targetPath" --options="$formattingStyle" --suffix=none --formatted
+  else
+    echo "Could not format $targetPath because it is not a suitable file type for AStyle." >&2
+    exit 1
+  fi
+fi
