@@ -54,7 +54,7 @@ else
   elif [ -f "$targetPath" ]; then
     targetPath="$(realpath "$targetPath")"
   else
-    echo "Could not format path $targetPath! Please either specify a file or a folder." >&2
+    echo "Could not format path $targetPath! Please specify a valid file or a folder." >&2
     exit 1
   fi
 fi
@@ -75,7 +75,8 @@ else
   if [ "$validFileExtension" != "" ]; then
     astyle "$targetPath" --options="$formattingStyle" --suffix=none --formatted
   else
-    echo "Could not format $targetPath because it is not a suitable file type for AStyle." >&2
+    echo "Could not format $targetPath because '${targetPath##*.}' is not a suitable file type for AStyle." >&2
     exit 1
   fi
 fi
+echo "Done!" >&2
