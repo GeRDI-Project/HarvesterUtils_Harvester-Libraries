@@ -27,12 +27,10 @@
 
 
 # abort if AStyle is not installed
-isInstalled=$(command -v astyle)
-
-if [ "$isInstalled" = "" ]; then
+command -v astyle || {
   echo "Cannot format: AStyle 3.11 is not installed!"
   exit 1
-fi
+}
 
 echo "Formatting Code:"
 
@@ -45,33 +43,28 @@ else
 fi
 
 # get path to the files that are to be formatted
-targetPath="$1"
-if [ "$targetPath" = "" ]; then
-  targetPath="$projectRoot/src/*"
-else
-  if [ -d "$targetPath" ]; then
-    targetPath="$(realpath "$targetPath")/*"
-  elif [ -f "$targetPath" ]; then
-    targetPath="$(realpath "$targetPath")"
-  else
+# preferably, use the firest argument, otherwise the project source folder
+targetPath=$(realpath "${1:-$projectRoot/src}")
+
+isFormattingDirectory=
+[ -d "$targetPath" ] && isFormattingDirectory=true
+[ -f "$targetPath" ] && isFormattingDirectory=false
+if [ -z $isFormattingDirectory ]; then 
     echo "Could not format path $targetPath! Please specify a valid file or a folder." >&2
     exit 1
-  fi
 fi
 
 # read ini files
 formattingStyle="$projectRoot/scripts/formatting/astyle-kr.ini"
-includedFiles=$(cat "$projectRoot/scripts/formatting/astyle-includedFiles.ini")
+includedFiles="$projectRoot/scripts/formatting/astyle-includedFiles.ini"
 
-if [ "${targetPath: -1}" = "*" ]; then
+if $isFormattingDirectory; then
   # format folder
-  printf '%s\n' "$includedFiles" | while IFS= read -r fileType
-  do 
-    astyle "$targetPath.$fileType" --options="$formattingStyle" --recursive --suffix=none --formatted
-  done
+  xargs -a "$includedFiles" -I {} \
+    astyle --options="$formattingStyle" --recursive --suffix=none --formatted "$targetPath/*.{}"
 else
   # format single file
-  validFileExtension=$(echo "$includedFiles" | grep "${targetPath##*.}")
+  validFileExtension=$(grep "${targetPath##*.}" "$includedFiles")
   if [ "$validFileExtension" != "" ]; then
     astyle "$targetPath" --options="$formattingStyle" --suffix=none --formatted
   else
