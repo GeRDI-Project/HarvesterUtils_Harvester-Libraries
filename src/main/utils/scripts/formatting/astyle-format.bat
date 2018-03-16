@@ -18,6 +18,7 @@
 
 @ECHO OFF
 SETLOCAL ENABLEEXTENSIONS
+SETLOCAL ENABLEDELAYEDEXPANSION
 
 WHERE /Q astyle
 IF %ERRORLEVEL% NEQ 0 (
@@ -32,18 +33,64 @@ echo Formatting Code:
 :: navigate to project root directory
 for /f %%i in ('git rev-parse --show-toplevel') do SET projectRoot=%%i
 IF "%projectRoot%" == "" (
-  SET projectRoot=%CD%
+  SET projectRoot=!CD!
 ) ELSE (
-  cd %projectRoot%
+  cd !projectRoot!
 )
 
-SET formattingStyle=%projectRoot%/scripts/formatting/astyle-kr.ini
-SET includedFiles=%projectRoot%/scripts/formatting/astyle-includedFiles.ini
+:: get path to the files that are to be formatted
+SET "targetPath=%1"
 
-:: format all files
-for /F "tokens=*" %%i in (%includedFiles%) do (
-  astyle "%projectRoot%/src/*.%%i" --suffix=none --recursive --formatted --options="%formattingStyle%"
+IF "!targetPath!" == "" (
+  SET "targetPath=!projectRoot!\src\*"
+  
+) ELSE (
+  :: if path is the folder, get its absolute path
+  IF EXIST "!targetPath!\^*" (
+    pushd !targetPath!
+	SET "targetPath=!CD!\*"
+	popd
+  ) ELSE (
+    IF EXIST "%targetPath%" (
+      SET "targetPath=!targetPath:"=!"
+    ) ELSE (
+      echo Could not format path %targetPath%^^! Please specify a valid file or a folder.
+      ENDLOCAL
+      ECHO ON
+      EXIT /B 1
+	)
+  )
 )
 
+SET formattingStyle=%projectRoot%\scripts\formatting\astyle-kr.ini
+SET includedFiles=%projectRoot%\scripts\formatting\astyle-includedFiles.ini
+
+:: check if path ends with * to distinguish between folders and files
+IF "%targetPath:~-1%" == "*" (
+  :: format folder
+  for /F "tokens=*" %%i in ('type "!includedFiles!"') do (
+    astyle "!targetPath!.%%i" --suffix=none --recursive --formatted --options="!formattingStyle!"
+  )
+) ELSE (
+  :: check if file has an allowed file extension
+  SET isValidFile=false
+  for %%i in ("!targetPath!") do (
+    SET fileExtension=%%~xi
+	for /f %%i in ('type "!includedFiles!"^|find "!fileExtension:~1!"') do (
+      SET isValidFile=true
+    )
+  )
+  :: format single file
+  IF "!isValidFile!" == "true" (
+    astyle "!targetPath!" --suffix=none --formatted --options="!formattingStyle!"
+  ) ELSE (
+    echo Could not format %targetPath% because ^'!fileExtension!^' is not a suitable file type for AStyle.
+    ENDLOCAL
+    ECHO ON
+    EXIT /B 1
+  )
+)
+
+echo Done^^!
 ENDLOCAL
 ECHO ON
