@@ -143,7 +143,7 @@ Main() {
   
   # generate headers
   echo "Adding license headers for owner(s) '$owner'" >&2
-  mvn license:format -DaddHeaders -Downer="$owner" >&2 
+  mvn license:format -DaddHeadersInternal -Downer="$owner" >&2 
 }
 
 
