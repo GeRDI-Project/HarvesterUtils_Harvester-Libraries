@@ -24,58 +24,79 @@
 #
 # Arguments: none
 
+
+# treat unset variables as an error when substituting
 set -u
 
-if [ ! -f "pom.xml" ]; then
-  echo "Cannot set license headers, because no pom.xml exists!" >&2
-  exit 1
-fi
 
-owner=""
-inceptionYear=""
+#########################
+#  FUNCTION DEFINITIONS #
+#########################
 
-# read pom.xml
-pomContent=$(cat pom.xml)
+# Retrieves the owner defined in the pom.xml.
+# If no owner is specified, all developers are returned
+# in a comma separated string.
+#
+# Arguments:
+#  1 - the content of the pom.xml of which the owner is to be retrieved  
+#
+GetOwner() {
+  local pomContent="$1"
 
-# retrieve owner tag value
-owner=$(echo "$pomContent" | grep -oP "(?<=<owner>)[^<]+")
+  # retrieve owner tag value
+  local owner
+  owner=$(echo "$pomContent" | grep -oP "(?<=<owner>)[^<]+")
 
-# retrieve developers if no owner was specified
-if [ "$owner" = "" ]; then
-  developers=${pomContent#*<developers>}
-  developers=${developers%%</developers>*}
-  developers=$(echo "$developers" | grep -oP "(?<=<name>)[^<]+")
+  # retrieve developers if no owner was specified
+  if [ -z "$owner" ]; then
+    local developers
+    developers=${pomContent#*<developers>}
+    developers=${developers%%</developers>*}
+	
+    owner=$(echo "$developers" \
+	        | grep -oP "(?<=<name>)[^<]+" \
+            | tr '\n' ',')
+    owner=$(echo "${owner::-1}" | sed -e 's~,~, ~g')
+  fi
   
-  owner=$(printf '%s\n' "$developers" | (while IFS= read -r devName
-  do
-    if [ "$owner" = "" ]; then
-	  owner="$devName"
-	else
-	  owner="$owner, $devName"
-	fi
-  done
-  
-  echo "$owner" ))
-fi
+  echo "$owner"
+}
 
-# abort if no owner was found
-if [ "$owner" = "" ]; then
-  echo "Cannot set license headers, because no owners are specified!" >&2
-  exit 1
-fi
 
-# retrieve inception year
-inceptionYear=$(echo "$pomContent" | grep -oP "(?<=<inceptionYear>)[^<]+")
+# Checks if the pom.xml has a defined inception year.
+#
+# Arguments:
+#  1 - the content of the pom.xml to be checked
+#
+HasInceptionYear() {
+  local pomContent="$1"
+  echo "$pomContent" | grep -q "<inceptionYear>"
+}
 
-if [ "$inceptionYear" = "" ]; then
-  echo "No <inceptionYear> tag was found, using the date of the first commit of the pom.xml" >&2
-  commitDates=$(git log --format=%aD -- "pom.xml")
-  inceptionYear=$(echo "${commitDates##*$'\n'}" | grep -oP "(?<=\s)\d\d\d\d")
+
+# Adds an inceptionYear-tag with a the first commit year to the pom.xml.
+#
+# Arguments:
+#  1 - the content of the pom.xml to which the year is added
+#
+AddInceptionYear() {
+  local pomContent="$1"
   
-  echo "Adding <inceptionYear> tag to pom.xml" >&2
+  echo "No <inceptionYear> tag was found, adding the date of the first commit as inception year." >&2
   
-  # try to add year after descriptionTag
-  if [ "$(echo "$pomContent" | grep -o "</description>")" != "" ]; then
+  # look for first commit of the pom.xml
+  local commitDates=$(git log --format=%aD -- "pom.xml")
+  local year=$(echo "${commitDates##*$'\n'}" | grep -oP "(?<=\s)\d\d\d\d")
+  
+  # abort if there is no commit date
+  if [ -z "$year" ]; then
+    echo "Cannot set license headers, because the inception year could not be retrieved!" >&2
+    exit 1
+  fi  
+  
+  # retrieve a tag after which the insertion year should be added
+  local insertionTag
+  if [ -n $(echo "$pomContent" | grep -o "</description>") ]; then
     insertionTag="description"
   else
     insertionTag="modelVersion"
@@ -87,12 +108,47 @@ if [ "$inceptionYear" = "" ]; then
   # write content to temporary pom.xml
   newPom=$(mktemp)
   echo "${pomContent%</$insertionTag>*}</$insertionTag>" > $newPom
-  echo "$whitespace<inceptionYear>$inceptionYear</inceptionYear>${pomContent#*</$insertionTag>}" >> $newPom
+  echo "$whitespace<inceptionYear>$year</inceptionYear>${pomContent#*</$insertionTag>}" >> $newPom
   
   # replace pom.xml
   mv -f $newPom pom.xml
-fi
+}
 
-# generate headers
-echo "Adding license headers for owner(s) '$owner' and year '$inceptionYear'" >&2
-echo -e "$(mvn generate-resources -DaddHeaders -Downer="$owner")" >&2
+
+# The main function that is called when this script is executed
+#
+# Arguments: - 
+#
+Main() {
+  # check if pom.xml exists
+  if [ ! -f "pom.xml" ]; then
+    echo "Cannot set license headers, because no pom.xml exists!" >&2
+    exit 1
+  fi
+  
+  # read pom.xml
+  local pomContent=$(cat pom.xml)
+  
+  # retrieve owner or developers
+  local owner=$(GetOwner "$pomContent")
+  if [ -z "$owner" ]; then
+    echo "Cannot set license headers, because no owners are specified!" >&2
+    exit 1
+  fi
+
+  # check if inception year is present in the pom
+  if ! $(HasInceptionYear "$pomContent"); then
+    AddInceptionYear "$pomContent"
+  fi
+  
+  # generate headers
+  echo "Adding license headers for owner(s) '$owner'" >&2
+  mvn license:format -DaddHeaders -Downer="$owner" >&2 
+}
+
+
+###########################
+#  BEGINNING OF EXECUTION #
+###########################
+
+Main "$@"
