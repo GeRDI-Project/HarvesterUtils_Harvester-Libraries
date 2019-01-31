@@ -84,9 +84,8 @@ AddInceptionYear() {
   
   echo "No <inceptionYear> tag was found, adding the date of the first commit as inception year." >&2
   
-  # look for first commit of the pom.xml
-  local commitDates=$(git log --format=%aD -- "pom.xml")
-  local year=$(echo "${commitDates##*$'\n'}" | grep -oP "(?<=\s)\d\d\d\d")
+  # look for first commit of the pom.xml)
+  local year=$( git log --format=%ad --date=format:%Y pom.xml | tail -1 )
   
   # abort if there is no commit date
   if [ -z "$year" ]; then
