@@ -28,6 +28,7 @@
 SETLOCAL ENABLEEXTENSIONS
 SETLOCAL ENABLEDELAYEDEXPANSION
 
+:: verify that pom exists
 SET pomPath=pom.xml
 IF NOT EXIST "%pomPath%" (
   echo Cannot set license headers, because no pom.xml exists^^!
@@ -43,13 +44,13 @@ for /f "tokens=1,2,3 delims=><" %%a in ('type !pomPath!^|find "<owner>"') do (
 
 :: retrieve developer names if no owner was specified
 IF "%owner%" == "" (
-  :: retrieve line number of <developer> tag
+  :: retrieve line number of <developers> tag
   for /f "tokens=1,2,3 delims=[]" %%a in ('type !pomPath!^|find /N "<developers>"') do (
     SET /a developersOpeningLine=%%a
   )
   
   IF NOT "!developersOpeningLine!" == "" (
-    :: retrieve line number of </developer> tag
+    :: retrieve line number of </developers> tag
     for /f "tokens=1,2,3 delims=[]" %%a in ('type !pomPath!^|find /N "</developers>"') do (
       SET /a developersClosingLine=%%a
     )
@@ -134,7 +135,7 @@ IF "%inceptionYear%" == "" (
 
 :: generate headers
 echo Adding license headers for owner(s) ^'%owner%^' and year ^'%inceptionYear%^'
-mvn generate-resources -DaddHeaders "-Downer=%owner%"
+mvn license:format -DaddHeadersInternal "-Downer=%owner%"
 
 :: exit script
 ENDLOCAL
