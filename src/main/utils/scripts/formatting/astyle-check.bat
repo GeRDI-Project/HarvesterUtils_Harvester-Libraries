@@ -25,7 +25,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
 :: check if astyle exists
 WHERE /Q astyle
 IF %ERRORLEVEL% NEQ 0 (
-  echo Cannot format: AStyle 3.11 is not installed^^!
+  echo Cannot format: AStyle 3.0.1 is not installed^^!
   ENDLOCAL
   ECHO ON
   EXIT /B 1

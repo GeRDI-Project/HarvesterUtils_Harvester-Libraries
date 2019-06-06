@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<ruleset name="Custom ruleset"
+	xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+
+	<description>This PMD ruleset is used for checking Java projects from GeRDI.</description>
+
+	<rule ref="category/java/bestpractices.xml"/>
+	<rule ref="category/java/security.xml"/>
+
+	<rule ref="category/java/multithreading.xml">
+		<exclude name="AvoidUsingVolatile"/> <!-- required to prevent threading bugs-->
+		<exclude name="UseConcurrentHashMap"/> <!-- too many false positives-->
+	</rule>
+
+	<rule ref="category/java/errorprone.xml">
+		<exclude name="DataflowAnomalyAnalysis"/>			<!-- false positive for "for(Object o : objects)" loops -->
+		<exclude name="ConstructorCallsOverridableMethod"/>	<!-- often wanted to restrict base behavior while requiring overrides -->
+		<exclude name="NullAssignment"/> 					<!-- often needed to exclude something from serialized JSON objects -->
+		<exclude name="AvoidLiteralsInIfCondition"/>
+		<exclude name="BeanMembersShouldSerialize"/>		<!-- false positive for classes that use Lombok -->
+	</rule>
+
+	<rule ref="category/java/performance.xml">
+		<exclude name="AvoidInstantiatingObjectsInLoops"/> <!-- too many false positives when instantiating maps or lists -->
+	</rule>
+
+	<rule ref="category/java/codestyle.xml">
+		<exclude name="ShortVariable"/>
+		<exclude name="LongVariable"/>
+		<exclude name="ShortClassName"/>
+		<exclude name="AtLeastOneConstructor"/>
+		<exclude name="OnlyOneReturn"/>
+		<exclude name="ClassNamingConventions"/>	<!-- not excluded, but customized -->
+		<exclude name="ControlStatementBraces"/>	<!-- not true for KR formatting style -->
+		<exclude name="AvoidFinalLocalVariable"/>	<!-- can improve readability in many cases -->
+	</rule>
+	<rule ref="category/java/codestyle.xml/ClassNamingConventions">
+		<properties>
+		<property name="utilityClassPattern" value="[A-Z][a-zA-Z]+(Utils?|Helper|Constants)"/>
+		</properties>
+	</rule>
+
+	<rule ref="category/java/design.xml">
+		<exclude name="LoosePackageCoupling"/>
+		<exclude name="LawOfDemeter"/>
+		<exclude name="NcssCount"/>
+		<exclude name="CyclomaticComplexity"/>
+		<exclude name="UseObjectForClearerAPI"/>
+		<exclude name="ExcessiveImports"/>
+		<exclude name="TooManyMethods"/>
+		<exclude name="TooManyFields"/>
+	</rule>
+
+	<rule ref="category/java/documentation.xml">
+		<exclude name="CommentContent"/>
+		<exclude name="CommentRequired"/>
+		<exclude name="CommentSize"/>
+	</rule>
+	<rule ref="category/java/documentation.xml/CommentRequired">
+		<properties>
+			<property name="methodWithOverrideCommentRequirement" value="Ignored" />
+			<property name="accessorCommentRequirement" value="Ignored" />
+			<property name="headerCommentRequirement" value="Required" />
+			<property name="fieldCommentRequirement" value="Ignored" />
+			<property name="publicMethodCommentRequirement" value="Required" />
+			<property name="protectedMethodCommentRequirement" value="Required" />
+			<property name="enumCommentRequirement" value="Ignored" />
+			<property name="serialVersionUIDCommentRequired" value="Ignored" />
+		</properties>
+	</rule>
+</ruleset>
