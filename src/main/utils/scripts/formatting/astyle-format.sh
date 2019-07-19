@@ -28,7 +28,7 @@
 
 # abort if AStyle is not installed
 command -v astyle || {
-  echo "Cannot format: AStyle 3.11 is not installed!"
+  echo "Cannot format: AStyle 3.0.1 is not installed!"
   exit 1
 }
 

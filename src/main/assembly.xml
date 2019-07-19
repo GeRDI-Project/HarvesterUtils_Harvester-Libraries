@@ -23,7 +23,7 @@
 	<fileSets>
 		<fileSet>
 			<directory>src/main/utils</directory>
-			<outputDirectory></outputDirectory>
+			<outputDirectory>target/harvester-utils/</outputDirectory>
 		</fileSet>
 	</fileSets>
 </assembly>

@@ -22,7 +22,7 @@
 isInstalled=$(command -v astyle)
 
 if [ "$isInstalled" = "" ]; then
-  echo "Cannot format: AStyle 3.11 is not installed!"
+  echo "Cannot format: AStyle 3.0.1 is not installed!"
   exit 1
 fi
 
