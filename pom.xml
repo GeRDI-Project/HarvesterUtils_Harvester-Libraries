@@ -17,6 +17,13 @@
 		<gpg.plugin.version>1.6</gpg.plugin.version>
 		<staging.plugin.version>1.6.7</staging.plugin.version>
 	</properties>
+
+	<licenses>
+		<license>
+			<name>The Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
 	
 	<build>
         <plugins>
