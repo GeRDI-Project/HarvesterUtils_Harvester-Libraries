@@ -107,9 +107,9 @@
 	</distributionManagement>
 
 	<scm>
-		<connection>scm:git:ssh://git@code.gerdi-project.de:7999/hl/parentpoms.git</connection>
-		<developerConnection>scm:git:ssh://git@code.gerdi-project.de:7999/hl/parentpoms.git</developerConnection>
-		<url>https://code.gerdi-project.de/scm/hl/parentpoms.git</url>
+		<connection>scm:git:ssh://git@code.gerdi-project.de:7999/hl/harvesterutils.git</connection>
+		<developerConnection>scm:git:ssh://git@code.gerdi-project.de:7999/hl/harvesterutils.git</developerConnection>
+		<url>https://code.gerdi-project.de/scm/hl/harvesterutils.git</url>
 		<tag>HEAD</tag>
 	</scm>
   
