@@ -11,6 +11,7 @@
 	<name>Harvester Utilities Archive</name>
 	<description>This project includes utilities that will be unpacked to a harvester project, but not committed to a repository.</description>
 	<inceptionYear>2017</inceptionYear>
+	<url>http://www.gerdi-project.de</url>
 	
 	<properties>
 		<assembly.plugin.version>3.1.0</assembly.plugin.version>
