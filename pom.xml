@@ -14,7 +14,16 @@
 	
 	<properties>
 		<assembly.plugin.version>3.1.0</assembly.plugin.version>
+		<gpg.plugin.version>1.6</gpg.plugin.version>
+		<staging.plugin.version>1.6.7</staging.plugin.version>
 	</properties>
+
+	<licenses>
+		<license>
+			<name>The Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
 	
 	<build>
         <plugins>
@@ -40,6 +49,49 @@
         </plugins>
     </build>
 	
+	<profiles>
+		<profile>
+			<id>deployment</id>
+			<activation>
+				<property>
+					<name>deploy</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<!-- Sign artifacts -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>${gpg.plugin.version}</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+
+					<!-- Stage to maven central -->
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>${staging.plugin.version}</version>
+						<extensions>true</extensions>
+						<configuration>
+							<serverId>ossrh</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+							<autoReleaseAfterClose>true</autoReleaseAfterClose>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+	
 	<developers>
 		<developer>
 			<name>Robin Weiss</name>
@@ -62,9 +114,9 @@
 	</distributionManagement>
 
 	<scm>
-		<connection>scm:git:ssh://git@code.gerdi-project.de:7999/hl/parentpoms.git</connection>
-		<developerConnection>scm:git:ssh://git@code.gerdi-project.de:7999/hl/parentpoms.git</developerConnection>
-		<url>https://code.gerdi-project.de/scm/hl/parentpoms.git</url>
+		<connection>scm:git:ssh://git@code.gerdi-project.de:7999/hl/harvesterutils.git</connection>
+		<developerConnection>scm:git:ssh://git@code.gerdi-project.de:7999/hl/harvesterutils.git</developerConnection>
+		<url>https://code.gerdi-project.de/scm/hl/harvesterutils.git</url>
 		<tag>HEAD</tag>
 	</scm>
   
