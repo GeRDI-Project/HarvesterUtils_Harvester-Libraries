@@ -62,8 +62,9 @@ IF "!targetPath!" == "" (
   )
 )
 
-SET formattingStyle=%projectRoot%\scripts\formatting\astyle-kr.ini
-SET includedFiles=%projectRoot%\scripts\formatting\astyle-includedFiles.ini
+SET scriptsDir=%~dp0
+SET formattingStyle=%scriptsDir%astyle-kr.ini
+SET includedFiles=%scriptsDir%astyle-includedFiles.ini
 
 :: check if path ends with * to distinguish between folders and files
 IF "%targetPath:~-1%" == "*" (

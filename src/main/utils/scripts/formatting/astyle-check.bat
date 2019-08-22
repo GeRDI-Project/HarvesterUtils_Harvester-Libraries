@@ -41,8 +41,9 @@ IF "%projectRoot%" == "" (
   cd %projectRoot%
 )
 
-SET formattingStyle=%projectRoot%/scripts/formatting/astyle-kr.ini
-SET includedFiles=%projectRoot%/scripts/formatting/astyle-includedFiles.ini
+SET scriptsDir=%~dp0
+SET formattingStyle=%scriptsDir%astyle-kr.ini
+SET includedFiles=%scriptsDir%astyle-includedFiles.ini
 
 :: run AStyle without changing the files
 SET unformattedCount=0
