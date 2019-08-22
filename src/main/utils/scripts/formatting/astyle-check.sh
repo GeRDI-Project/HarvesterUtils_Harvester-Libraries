@@ -37,8 +37,9 @@ else
 fi
 
 # read ini files
-formattingStyle="$projectRoot/scripts/formatting/astyle-kr.ini"
-includedFiles=$(cat "$projectRoot/scripts/formatting/astyle-includedFiles.ini")
+scriptPath=$(dirname "${BASH_SOURCE[0]}")
+formattingStyle="$scriptPath/astyle-kr.ini"
+includedFiles=$(cat "$scriptPath/astyle-includedFiles.ini")
 
 # run AStyle without changing the files
 CountAndPrintUnformattedFiles() {

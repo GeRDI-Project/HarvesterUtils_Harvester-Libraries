@@ -47,7 +47,8 @@ if [ "$projectRoot" != "" ]; then
 fi
 
 # build image
-fullImageName=$(./scripts/docker-build.sh "$1" "$2" "$3")
+scriptPath=$(dirname "${BASH_SOURCE[0]}")
+fullImageName=$($scriptPath/docker-build.sh "$1" "$2" "$3")
 
 if [ "$fullImageName" != "" ]; then 
   # push image

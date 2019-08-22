@@ -55,8 +55,9 @@ if [ -z $isFormattingDirectory ]; then
 fi
 
 # read ini files
-formattingStyle="$projectRoot/scripts/formatting/astyle-kr.ini"
-includedFiles="$projectRoot/scripts/formatting/astyle-includedFiles.ini"
+scriptPath=$(dirname "${BASH_SOURCE[0]}")
+formattingStyle="$scriptPath/astyle-kr.ini"
+includedFiles="$scriptPath/astyle-includedFiles.ini"
 
 if $isFormattingDirectory; then
   # format folder
